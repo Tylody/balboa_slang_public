@@ -1,0 +1,56 @@
+{
+  "resolution": [800, 800],
+  "background": [1.0, 1.0, 1.0],
+  "objects": [
+    {
+      "type": "triangle",
+      "p0": [200, 570],
+      "p1": [200, 650],
+      "p2": [300, 600],
+      "fill_rgba": [1, 1.0, 1.0, 1]
+    },
+    {
+      "type": "triangle",
+      "p0": [600, 570],
+      "p1": [600, 650],
+      "p2": [500, 600],
+      "fill_rgba": [1, 1.0, 1.0, 1]
+    },
+    {
+      "type": "circle",
+      "fill_rgba": [1.0, 1.0, 1.0, 1.0],
+      "transform": [
+        { "scale": [250.0, 200.0] },
+        { "translate": [400.0, 450.0] }
+      ]
+    },
+    {
+      "type": "circle",
+      "fill_rgba": [1.0, 1.0, 1.0, 1.0],
+      "transform": [
+        { "scale": [120.0, 215.0] },
+        { "translate": [400.0, 150.0] }
+      ]
+    },
+    {
+      "type": "quadratic_bezier",
+      "points": [140.0, 280.0, 200.0, 250.0, 180.0, 180.0],
+      "stroke_rgba": [1.0, 1.0, 1.0, 1.0],
+      "stroke_width": 30.0,
+      "closed": true
+    },
+    {
+      "type": "quadratic_bezier",
+      "points": [185.0, 180.0, 200.0, 150.0, 360.0, 180.0],
+      "stroke_rgba": [1.0, 1.0, 1.0, 1.0],
+      "stroke_width": 40.0,
+      "closed": true
+    },
+    {
+      "type": "circle",
+      "center": [400.0, 400.0],
+      "radius": 360.0,
+      "fill_rgba": [0, 0, 0, 1]
+    }
+  ]
+}

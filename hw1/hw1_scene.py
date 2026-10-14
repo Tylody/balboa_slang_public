@@ -190,16 +190,82 @@ def compose_transformation(transforms):
     F = np.eye(3, dtype=np.float32)
 
     for transform in transforms:
-        pass
         # TODO: your code here
+
+        (name,value), = transform.items()
+        A = np.eye(3, dtype=np.float32)
+
+        if name == 'scale':
+            A = np.array([
+                [value[0], 0, 0],
+                [0, value[1], 0],
+                [0, 0, 1]
+            ])
+
+        elif name == 'translate':
+            A = np.array([
+                [1, 0, value[0]],
+                [0, 1, value[1]],
+                [0, 0, 1]
+            ])
+
+        elif name == 'rotate':
+            theta = np.radians(value[0])
+            A = np.array([
+                [np.cos(theta), -1 * np.sin(theta), 0],
+                [np.sin(theta), np.cos(theta), 0],
+                [0, 0, 1]
+            ])
+
+        elif name == 'shear_x':
+            A = np.array([
+                [1, value[0], 0],
+                [0, 1, 0],
+                [0, 0, 1]
+            ])
+
+        elif name == 'shear_y':
+            A = np.array([
+                [1, 0, 0],
+                [value[0], 1, 0],
+                [0, 0, 1]
+            ])
+
+        F = A @ F
 
     return F
 
 def interpolate_transformation(transform_keyframes, t):
     # TODO: your code here
 
-    # Should never happen?
-    assert False
+    i = 0
+    max_time = transform_keyframes[-1]["time"]
+    t_in = t%max_time
+    while i < len(transform_keyframes):
+        if t_in >= transform_keyframes[i]["time"] and t_in <= transform_keyframes[i+1]["time"]:
+            break
+        i += 1
+
+    kf_0 = transform_keyframes[i]["transform"]
+    kf_1 = transform_keyframes[i+1]["transform"]
+    t_0 = transform_keyframes[i]["time"]
+    t_1 = transform_keyframes[i+1]["time"]
+    w = (t_in - t_0) / (t_1 - t_0)
+
+    x_0 = []
+    x_1 = []
+    for i in range(len(kf_0)):
+        (n0,v0), = kf_0[i].items()
+        x_0.append([n0,v0])
+        (n1,v1), = kf_1[i].items()
+        x_1.append([n1,v1])
+
+    x_t = []
+
+    for i in range(len(x_0)):
+        x_t.append( { x_0[i][0]: [(x_0[i][1][j]*(1-w) + x_1[i][1][j]*w) for j in range(len(x_0[i][1]))] })
+
+    return x_t
 
 def upload_scene(scene, module, slang_device, t=0.0):
     # Keyframe parameters are interpolated on the CPU;
