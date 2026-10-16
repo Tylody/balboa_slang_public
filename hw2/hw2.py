@@ -20,15 +20,30 @@ def hw2_1(args):
     def to_screen(p):
         # HW2.1: implement this
         # access "s" using args.s
-        return (0.0, 0.0)
+
+        s = args.s # scaling factor of image
+
+        # convert from real to cam space
+        pp = (-1 * p[0] / p[2], -1 * p[1] / p[2])
+
+        # convert from cam space to screen space
+
+        xppp = img.width * ((pp[0] + s * a) / (2 * s * a))
+        yppp = img.height * (1 - (pp[1] + s) / (2 * s))
+
+        return (xppp, yppp)
 
     sp0 = to_screen(args.p0)
     sp1 = to_screen(args.p1)
     sp2 = to_screen(args.p2)
 
     # HW2.1: implement this
-    aabb_min = (0, 0)
-    aabb_max = (10, 10)
+    x_min = min(sp0[0], sp1[0], sp2[0])
+    y_min = min(sp0[1], sp1[1], sp2[1])
+    x_max = max(sp0[0], sp1[0], sp2[0])
+    y_max = max(sp0[1], sp1[1], sp2[1])
+    aabb_min = (x_min, y_min)
+    aabb_max = (x_max, y_max)
 
     vars = {'sp0': sp0,
             'sp1': sp1,
