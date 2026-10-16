@@ -92,6 +92,8 @@ def hw2_2(args):
 
     mesh = hw2_scene.parse_triangle_mesh(args.mesh)
 
+    img = buffer.create_texture_2d(slang_device, args.width, args.height)
+    a = img.width / img.height
     def to_screen(p):
         # HW2.2: implement this (basically the same as HW2.1)
 
