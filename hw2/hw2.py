@@ -94,7 +94,18 @@ def hw2_2(args):
 
     def to_screen(p):
         # HW2.2: implement this (basically the same as HW2.1)
-        return (0.0, 0.0)
+
+        s = args.s # scaling factor of image
+
+        # convert from real to cam space
+        pp = (-1 * p[0] / p[2], -1 * p[1] / p[2])
+
+        # convert from cam space to screen space
+
+        xppp = img.width * ((pp[0] + s * a) / (2 * s * a))
+        yppp = img.height * (1 - (pp[1] + s) / (2 * s))
+
+        return (xppp, yppp)
 
     # splat the triangles onto the screen
     screen_vertices = [to_screen(mesh.vertices[vid, :]) for vid in range(mesh.vertices.shape[0])]
