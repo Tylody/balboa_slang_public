@@ -38,10 +38,10 @@ def hw2_1(args):
     sp2 = to_screen(args.p2)
 
     # HW2.1: implement this
-    x_min = min(sp0[0], sp1[0], sp2[0])
-    y_min = min(sp0[1], sp1[1], sp2[1])
-    x_max = max(sp0[0], sp1[0], sp2[0])
-    y_max = max(sp0[1], sp1[1], sp2[1])
+    x_min = max(math.floor(min(sp0[0], sp1[0], sp2[0])), 0)
+    y_min = max(math.floor(min(sp0[1], sp1[1], sp2[1])), 0)
+    x_max = min(math.ceil(max(sp0[0], sp1[0], sp2[0])), img.width - 1)
+    y_max = min(math.ceil(max(sp0[1], sp1[1], sp2[1])), img.height - 1)
     aabb_min = (x_min, y_min)
     aabb_max = (x_max, y_max)
 
