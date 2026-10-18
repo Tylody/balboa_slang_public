@@ -29,35 +29,39 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
 
     float2 p = float2(ipixel) + 0.5;
 
-    float sm[3] = { distance(sp0,sp1), distance(sp1,sp2), distance(sp2,sp0) };
-    float Sm = (sm[0] + sm[1] + sm[2]) / 2;
+    float2 p0p1 = sp1 - sp0;
+    float2 p1p2 = sp2 - sp1;
 
-    float sm_0[3] = { distance(p,sp1), distance(sp1,sp2), distance(sp2,p) };
-    float Sm_0 = (sm_0[0] + sm_0[1] + sm_0[2]) / 2;
+    float2 pp0 = sp0 - p;
+    float2 pp1 = sp1 - p;
+    float2 pp2 = sp2 - p;
 
-    float sm_1[3] = { distance(sp0,p), distance(p,sp2), distance(sp2,sp0) };
-    float Sm_1 = (sm_1[0] + sm_1[1] + sm_1[2]) / 2;
+    float area_p0p1p2 = length(cross(float3(p0p1, 0), float3(p1p2, 0))) / 2;
 
-    float sm_2[3] = { distance(sp0,sp1), distance(sp1,p), distance(p,sp0) };
-    float Sm_2 = (sm_2[0] + sm_2[1] + sm_2[2]) / 2;
+    float b0p = (length(cross(float3(pp1, 0), float3(pp2, 0))) / 2) / area_p0p1p2;
+    float b1p = (length(cross(float3(pp0, 0), float3(pp2, 0))) / 2) / area_p0p1p2;
+    float b2p = (length(cross(float3(pp0, 0), float3(pp1, 0))) / 2) / area_p0p1p2;
 
-    float area_p0p1p2 = sqrt( Sm * (Sm - sm[0]) * (Sm - sm[1]) * (Sm - sm[2]) );
-
-    float b0p = sqrt( Sm_0 * (Sm_0 - sm_0[0]) * (Sm_0 - sm_0[1]) * (Sm_0 - sm_0[2]) ) / area_p0p1p2;
-    float b1p = sqrt( Sm_1 * (Sm_1 - sm_1[0]) * (Sm_1 - sm_1[1]) * (Sm_1 - sm_1[2]) ) / area_p0p1p2;
-    float b2p = sqrt( Sm_2 * (Sm_2 - sm_2[0]) * (Sm_2 - sm_2[1]) * (Sm_2 - sm_2[2]) ) / area_p0p1p2;
-
-    float3 bi_proj = float3(b0p / inv_depth0, b1p / inv_depth1, b2p / inv_depth2);
+    float3 bi_proj = float3(b0p * inv_depth0, b1p * inv_depth1, b2p * inv_depth2);
     float bi_denom = bi_proj.x + bi_proj.y + bi_proj.z;
 
     float3 bi = bi_proj / bi_denom;
-    float pz = bi.x * inv_depth0 + bi.y * inv_depth1 + bi.z * inv_depth2;
+    float pz = bi.x / inv_depth0 + bi.y / inv_depth1 + bi.z / inv_depth2;
 
     float3 c = bi.x * c0 + bi.y * c1 + bi.z * c2;
 
     if(pz < depth_image[ipixel]) {
-        color_image[ipixel] = float4(c, 1.0);
-        depth_image[ipixel] = pz;
+        float s0 = dot((p - sp0), float2(sp1.y - sp0.y, sp0.x - sp1.x));
+        float s1 = dot((p - sp1), float2(sp2.y - sp1.y, sp1.x - sp2.x));
+        float s2 = dot((p - sp2), float2(sp0.y - sp2.y, sp2.x - sp0.x));
+
+        if (
+            (s0 >= 0 && s1 >= 0 && s2 >= 0)
+            || (s0 <= 0 && s1 <= 0 && s2 <= 0)
+        ) {
+            color_image[ipixel] = float4(c, 1.0);
+            depth_image[ipixel] = pz;
+        }
     }
 
 }

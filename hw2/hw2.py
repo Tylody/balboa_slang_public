@@ -91,9 +91,6 @@ def hw2_2(args):
     a = args.width / args.height
 
     mesh = hw2_scene.parse_triangle_mesh(args.mesh)
-
-    img = buffer.create_texture_2d(slang_device, args.width, args.height)
-    a = img.width / img.height
     def to_screen(p):
         # HW2.2: implement this (basically the same as HW2.1)
 
@@ -103,9 +100,8 @@ def hw2_2(args):
         pp = (-1 * p[0] / p[2], -1 * p[1] / p[2])
 
         # convert from cam space to screen space
-
-        xppp = img.width * ((pp[0] + s * a) / (2 * s * a))
-        yppp = img.height * (1 - (pp[1] + s) / (2 * s))
+        xppp = args.width * ((pp[0] + s * a) / (2 * s * a))
+        yppp = args.height * (1 - (pp[1] + s) / (2 * s))
 
         return (xppp, yppp)
 
@@ -133,8 +129,20 @@ def hw2_2(args):
             # c0, c1, c2 from mesh.vertex_colors
             # use mesh.faces[tri_id] to obtain the vertex indices
 
+            sp0, sp1, sp2 = [screen_vertices[i] for i in mesh.faces[tri_id]]
+            c0, c1, c2 = [mesh.vertex_colors[i] for i in mesh.faces[tri_id]]
+
+            x_min = max(math.floor(min(sp0[0], sp1[0], sp2[0])), 0)
+            y_min = max(math.floor(min(sp0[1], sp1[1], sp2[1])), 0)
+            x_max = min(math.ceil(max(sp0[0], sp1[0], sp2[0])), args.width - 1)
+            y_max = min(math.ceil(max(sp0[1], sp1[1], sp2[1])), args.height - 1)
+            aabb_min = (x_min, y_min)
+            aabb_max = (x_max, y_max)
+
             if aabb_min[0] > aabb_max[0] or aabb_min[1] > aabb_max[1]:
                 continue
+
+            inv_depth0, inv_depth1, inv_depth2 = [-1 / mesh.vertices[i][2] for i in mesh.faces[tri_id]]
 
             shade_vars = {'sp0': sp0,
                           'sp1': sp1,
