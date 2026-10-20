@@ -42,10 +42,10 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
     float b1p = (length(cross(float3(pp0, 0), float3(pp2, 0))) / 2) / area_p0p1p2;
     float b2p = (length(cross(float3(pp0, 0), float3(pp1, 0))) / 2) / area_p0p1p2;
 
-    float3 bi_proj = float3(b0p * inv_depth0, b1p * inv_depth1, b2p * inv_depth2);
-    float bi_denom = bi_proj.x + bi_proj.y + bi_proj.z;
+    float3 bi_depth = float3(b0p * inv_depth0, b1p * inv_depth1, b2p * inv_depth2);
+    float bi_denom = bi_depth.x + bi_depth.y + bi_depth.z;
 
-    float3 bi = bi_proj / bi_denom;
+    float3 bi = bi_depth / bi_denom;
     float pz = bi.x / inv_depth0 + bi.y / inv_depth1 + bi.z / inv_depth2;
 
     float3 c = bi.x * c0 + bi.y * c1 + bi.z * c2;
