@@ -187,8 +187,81 @@ def compose_transformations(transformations):
     F = np.eye(4, dtype=np.float32)
 
     for transform in transformations:
-        pass
+
         # HW 2.3 TODO: your code here
+
+        (name,value), = transform.items()
+        A = np.eye(4, dtype=np.float32)
+
+        if name == 'scale':
+            sx, sy, sz = value
+            A = np.array([
+                [sx, 0, 0, 0],
+                [0, sy, 0, 0],
+                [0, 0, sz, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'translate':
+            tx, ty, tz = value
+            A = np.array([
+                [1, 0, 0, tx],
+                [0, 1, 0, ty],
+                [0, 0, 1, tz],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_x':
+            sin_t = np.sin(np.radians(value[0]))
+            cos_t = np.cos(np.radians(value[0]))
+
+            A = np.array([
+                [1, 0, 0, 0],
+                [0, cos_t, -1 * sin_t, 0],
+                [0, sin_t, cos_t, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_y':
+            sin_t = np.sin(np.radians(value[0]))
+            cos_t = np.cos(np.radians(value[0]))
+
+            A = np.array([
+                [cos_t, 0, sin_t, 0],
+                [0, 1, 0, 0],
+                [-1 * sin_t, 0, cos_t, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_z':
+            sin_t = np.sin(np.radians(value[0]))
+            cos_t = np.cos(np.radians(value[0]))
+
+            A = np.array([
+                [cos_t, -1 * sin_t, 0, 0],
+                [sin_t, cos_t, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'lookat':
+            p = np.array(value['position'])
+            t = np.array(value['target'])
+            u = np.array(value['up'])
+
+            d = (t-p) / np.linalg.norm(t-p)
+            dxu = np.cross(d,u)
+            r = dxu / np.linalg.norm(dxu)
+            u_p = np.cross(r,d)
+
+            A = np.array([
+                [r[0], u_p[0], -1 * d[0], p[0]],
+                [r[1], u_p[1], -1 * d[1], p[1]],
+                [r[2], u_p[2], -1 * d[2], p[2]],
+                [0, 0, 0, 1]
+            ])
+        
+        F = A @ F
 
     return F
 
