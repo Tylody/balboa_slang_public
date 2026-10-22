@@ -24,9 +24,6 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
 
     // TODO: HW 2.2
 
-    // heron's formula:
-    // s = (len(a)+len(b)+len(c)) / 2, area = sqrt(s(s-len(a))(s-len(b))(s-len(c)))
-
     float2 p = float2(ipixel) + 0.5;
 
     float2 p0p1 = sp1 - sp0;
