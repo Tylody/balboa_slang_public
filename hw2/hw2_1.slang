@@ -15,6 +15,17 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
     }
 
     // TODO: HW 2.1
-
-    image[ipixel] = float4(float3(0.0), 1.0);
+    float2 p =float2(ipixel)+0.5;
+    float2 e01 = sp1-sp0;
+    float2 e12 = sp2-sp1;
+    float2 e20 = sp0-sp2;
+    float2 n01=float2(e01.y, -e01.x);
+    float2 n12=float2(e12.y, -e12.x);
+    float2 n20=float2(e20.y, -e20.x);
+    float edge01=dot(p-sp0, n01);
+    float edge12=dot(p-sp1, n12);
+    float edge20=dot(p-sp2, n20);
+    if((edge01>=0 && edge12>=0 && edge20>=0) || (edge01<=0 && edge12<=0 && edge20<=0)){
+        image[ipixel] = float4(color, 1.0);
+    }
 }
