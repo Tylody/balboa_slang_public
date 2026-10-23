@@ -23,11 +23,18 @@ struct VertexOutput {
 VertexOutput vertex_main(uint vid : SV_VertexID) {
     VertexOutput output;
     // HW 2.7 TODO: implement
+
+    float4 p = mul(MVP, float4(vertices[vid],1.0));
+    output.position = p;
+
+
     return output;
 }
 
 [shader("fragment")]
 float4 fragment_main(VertexOutput input) : SV_Target {
     // HW 2.7 TODO: implement
+
+    float3 Kd = Kd_texture.Sample(Kd_sampler, input.uv).rgb;
     return float4(1.0);
 }
