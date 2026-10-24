@@ -27,6 +27,11 @@ VertexOutput vertex_main(uint vid : SV_VertexID) {
     float4 p = mul(MVP, float4(vertices[vid],1.0));
     output.position = p;
 
+    output.world_position = mul(model_matrix, float4(vertices[vid],1.0)).xyz;
+
+    output.world_normal = mul(normal_matrix, vertex_normals[vid]);
+
+    output.uv = vertex_uvs[vid];
 
     return output;
 }
@@ -35,6 +40,21 @@ VertexOutput vertex_main(uint vid : SV_VertexID) {
 float4 fragment_main(VertexOutput input) : SV_Target {
     // HW 2.7 TODO: implement
 
+    float3 n = normalize(input.world_normal);
+    float3 l = normalize(light_dir);
+    float3 v = normalize(camera_position - input.world_position);
     float3 Kd = Kd_texture.Sample(Kd_sampler, input.uv).rgb;
-    return float4(1.0);
+
+    float n_l = dot(n,l);
+    float3 amb = 0.2 * Kd;
+    float3 d = Kd * light_color * max(0,n_l);
+
+    float3 spec = float3(0);
+    if(n_l > 0) {
+        float3 r = reflect(-1 * l, n);
+        spec = Ks * light_color * pow(max(0, dot(r,v)),exponent);
+    }
+    float4 color = float4(amb + d + spec, 1);
+
+    return color;
 }
