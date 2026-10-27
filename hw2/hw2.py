@@ -98,7 +98,12 @@ def hw2_2(args):
 
     def to_screen(p):
         # HW2.2: implement this (basically the same as HW2.1)
-        return (0.0, 0.0)
+        s = args.s
+        xprime=-p[0]/p[2]
+        yprime=-p[1]/p[2]
+        xdprime=args.width*(xprime+s*a)/(2*s*a)
+        ydprime=args.height*(s-yprime)/(2*s)
+        return (xdprime, ydprime)
 
     # splat the triangles onto the screen
     screen_vertices = [to_screen(mesh.vertices[vid, :]) for vid in range(mesh.vertices.shape[0])]
@@ -123,6 +128,42 @@ def hw2_2(args):
             # aabb_min & aabb_max like in 2.1
             # c0, c1, c2 from mesh.vertex_colors
             # use mesh.faces[tri_id] to obtain the vertex indices
+            i0, i1, i2 = mesh.faces[tri_id]          
+
+            sp0 = screen_vertices[i0]
+            sp1 = screen_vertices[i1]
+            sp2 = screen_vertices[i2]
+
+            # camera-space z of each vertex is mesh.vertices[i, 2]
+            # depth = -z (positive), so inverse depth = 1/ -z
+            inv_depth0 = 1 / (-mesh.vertices[i0, 2])
+            inv_depth1 = 1 / (-mesh.vertices[i1, 2])
+            inv_depth2 = 1 / (-mesh.vertices[i2, 2])
+
+
+            # AABB calculation from 2.1
+            min_x = math.floor(min(sp0[0], sp1[0], sp2[0]))
+            max_x = math.ceil(max(sp0[0], sp1[0], sp2[0]))
+            min_y = math.floor(min(sp0[1], sp1[1], sp2[1]))
+            max_y = math.ceil(max(sp0[1], sp1[1], sp2[1]))
+
+            if(min_x < 0):
+                min_x = 0
+            if(min_y < 0): 
+                min_y = 0
+            if(max_x > args.width-1):
+                max_x = args.width-1
+            if(max_y > args.height-1):
+                max_y = args.height-1
+
+            aabb_min = (int(min_x), int(min_y))
+            aabb_max = (int(max_x), int(max_y))
+
+
+            c0 = mesh.vertex_colors[i0]
+            c1 = mesh.vertex_colors[i1]
+            c2 = mesh.vertex_colors[i2]
+
 
             if aabb_min[0] > aabb_max[0] or aabb_min[1] > aabb_max[1]:
                 continue
@@ -175,14 +216,28 @@ def hw2_3(args):
     depth_image = buffer.create_texture_2d(slang_device, width, height, num_channels=1)
 
     a = width / height
+    s = camera.s
 
     # HW 2.3: implement this
     # change np.zeros into the right matrices
     projection = np.zeros((4, 4), dtype=np.float32)
+    projection = np.array([[1, 0, 0, 0],
+                           [0, 1, 0, 0],
+                           [0, 0, 0, 1],
+                           [0, 0, -1, 0]], dtype=np.float32)
+
+
     camera_to_screen = np.zeros((4, 4), dtype=np.float32)
+    camera_to_screen = np.array([[(width/(2*s*a)), 0, 0, width/2],
+                                [0, -height/(2*s), 0, height/2], 
+                                [0, 0, 1, 0],
+                                [0, 0, 0, 1]], dtype=np.float32)
     # use camera.cam_to_world
     view_matrix = np.zeros((4, 4), dtype=np.float32)
+    view_matrix = np.linalg.inv(camera.cam_to_world)
+
     world_to_screen = np.zeros((4, 4), dtype=np.float32)
+    world_to_screen = camera_to_screen @ projection @ view_matrix
     
     screen_vertices_list = []
     inv_depth_list = []
@@ -191,6 +246,7 @@ def hw2_3(args):
         # change np.zeros into the right matrix
         # use mesh.model_matrix
         MVP = np.zeros((4, 4), dtype=np.float32)
+        MVP = world_to_screen @ mesh.model_matrix
         ones = np.ones((mesh.vertices.shape[0], 1), dtype=mesh.vertices.dtype)
         vertices = np.concatenate(
             [mesh.vertices, ones],
@@ -203,6 +259,8 @@ def hw2_3(args):
         # ---
         # HW 2.3: your code here
         # ---
+        vertices = vertices @ MVP.T
+        vertices = vertices[:, :3] / vertices[:, 3:4]
         inv_depth_list.append(np.ascontiguousarray(vertices[:, 2]))
         screen_vertices_list.append(np.ascontiguousarray(vertices[:, :2]))
 
@@ -227,6 +285,7 @@ def hw2_3(args):
             for tri_id in range(mesh.faces.shape[0]):
                 # HW 2.3: implement this
                 # (basically the same as HW 2.2)
+                
 
                 if aabb_min[0] > aabb_max[0] or aabb_min[1] > aabb_max[1]:
                     continue
