@@ -1,0 +1,140 @@
+{
+  "duration": 20.0,
+  "camera": {
+    "resolution": [
+      1024,
+      768
+    ],
+    "s": 0.38,
+    "z_near": 0.001,
+    "transform": [
+      {
+        "lookat": {
+          "position": [
+            0,
+            2.0,
+            4.0
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ]
+        }
+      }
+    ]
+  },
+  "light": {
+    "light_dir": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "light_color": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "background": [
+    0.035,
+    0.048,
+    0.075
+  ],
+  "objects": [
+    {
+      "filename": "dragon_rainbow.ply",
+      "material": {
+        "texture": "rainbow_Kd.png",
+        "Ks": [
+          0.95,
+          0.95,
+          0.95
+        ],
+        "exponent": 256.0
+      },
+      "transform_keyframes": [
+        {
+          "time": 0.0,
+          "transform": [
+            {
+              "rotate_y": [
+                -30.0
+              ]
+            },
+            {
+              "rotate_x": [
+                -10.0
+              ]
+            }
+          ]
+        },
+        {
+          "time": 5.0,
+          "transform": [
+            {
+              "rotate_y": [
+                60.0
+              ]
+            },
+            {
+              "rotate_x": [
+                -10.0
+              ]
+            }
+          ]
+        },
+        {
+          "time": 10.0,
+          "transform": [
+            {
+              "rotate_y": [
+                150.0
+              ]
+            },
+            {
+              "rotate_x": [
+                -10.0
+              ]
+            }
+          ]
+        },
+        {
+          "time": 15.0,
+          "transform": [
+            {
+              "rotate_y": [
+                240.0
+              ]
+            },
+            {
+              "rotate_x": [
+                -10.0
+              ]
+            }
+          ]
+        },
+        {
+          "time": 20.0,
+          "transform": [
+            {
+              "rotate_y": [
+                330.0
+              ]
+            },
+            {
+              "rotate_x": [
+                -10.0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
