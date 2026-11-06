@@ -46,6 +46,84 @@ def compose_transformations(transformations):
     # HW 3.4: copy paste your HW2.3 code here
 
     F = np.eye(4, dtype=np.float32)
+
+    for transform in transformations:
+
+        # HW 2.3 TODO: your code here
+
+        (name,value), = transform.items()
+        A = np.eye(4, dtype=np.float32)
+
+        if name == 'scale':
+            sx, sy, sz = value
+            A = np.array([
+                [sx, 0, 0, 0],
+                [0, sy, 0, 0],
+                [0, 0, sz, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'translate':
+            tx, ty, tz = value
+            A = np.array([
+                [1, 0, 0, tx],
+                [0, 1, 0, ty],
+                [0, 0, 1, tz],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_x':
+            sin_t = np.sin(np.radians(value[0]))
+            cos_t = np.cos(np.radians(value[0]))
+
+            A = np.array([
+                [1, 0, 0, 0],
+                [0, cos_t, -1 * sin_t, 0],
+                [0, sin_t, cos_t, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_y':
+            sin_t = np.sin(np.radians(value[0]))
+            cos_t = np.cos(np.radians(value[0]))
+
+            A = np.array([
+                [cos_t, 0, sin_t, 0],
+                [0, 1, 0, 0],
+                [-1 * sin_t, 0, cos_t, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_z':
+            sin_t = np.sin(np.radians(value[0]))
+            cos_t = np.cos(np.radians(value[0]))
+
+            A = np.array([
+                [cos_t, -1 * sin_t, 0, 0],
+                [sin_t, cos_t, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'lookat':
+            p = np.array(value['position'])
+            t = np.array(value['target'])
+            u = np.array(value['up'])
+
+            d = (t-p) / np.linalg.norm(t-p)
+            dxu = np.cross(d,u)
+            r = dxu / np.linalg.norm(dxu)
+            u_p = np.cross(r,d)
+
+            A = np.array([
+                [r[0], u_p[0], -1 * d[0], p[0]],
+                [r[1], u_p[1], -1 * d[1], p[1]],
+                [r[2], u_p[2], -1 * d[2], p[2]],
+                [0, 0, 0, 1]
+            ])
+        
+        F = A @ F
+
     return F
 
 def interpolate_transformation(transform_keyframes, t):
@@ -53,6 +131,46 @@ def interpolate_transformation(transform_keyframes, t):
 
     # create a new transform from the two keyframes
     interp_transforms = []
+    i = 0
+    max_time = transform_keyframes[-1]["time"]
+    t_in = t%max_time
+    while i < len(transform_keyframes):
+        if t_in >= transform_keyframes[i]["time"] and t_in <= transform_keyframes[i+1]["time"]:
+            break
+        i += 1
+
+    kf_0 = transform_keyframes[i]["transform"]
+    kf_1 = transform_keyframes[i+1]["transform"]
+    t_0 = transform_keyframes[i]["time"]
+    t_1 = transform_keyframes[i+1]["time"]
+    w = (t_in - t_0) / (t_1 - t_0)
+
+    x_0 = []
+    x_1 = []
+    for i in range(len(kf_0)):
+        (n0,v0), = kf_0[i].items()
+        x_0.append([n0,v0])
+        (n1,v1), = kf_1[i].items()
+        x_1.append([n1,v1])
+
+    x_t = []
+
+    for i in range(len(x_0)):
+
+        if x_0[i][0] == 'lookat':
+            x_t.append(
+                {
+                    x_0[i][0]: {
+                        "position": np.array(x_0[i][1]["position"])*(1-w) + np.array(x_1[i][1]["position"])*w,
+                        "target": np.array(x_0[i][1]["target"])*(1-w) + np.array(x_1[i][1]["target"])*w,
+                        "up": np.array(x_0[i][1]["up"])*(1-w) + np.array(x_1[i][1]["up"])*w
+                    }
+                }
+            )
+        else:
+            x_t.append( { x_0[i][0]: [(x_0[i][1][j]*(1-w) + x_1[i][1][j]*w) for j in range(len(x_0[i][1]))] })
+    interp_transforms = x_t
+
     return interp_transforms
 
 def get_transformation(obj, t):
