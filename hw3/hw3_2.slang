@@ -65,11 +65,11 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
         return;
     }
 
+    // color = (I / r^2) * Kd * max(n*l,0)
     float3 color = float3(0, 0, 0);
     float3 intersection = bestT * d;
     Sphere S = spheres[shapes[int(bestShape)].index];
     float3 normal = normalize(intersection - S.center);
-    // color = (I / r^2) * Kd * max(n*l,0)
 
     for (int i = 0; i < num_lights; i++) {
 
@@ -89,9 +89,5 @@ void compute_main(uint2 tid : SV_DispatchThreadID,
         float3 reflectance = shapes[bestShape].Kd * max(dot(normal,l),0);
         color += I * reflectance;
     }
-
-    // float3 color = (normal+1) / 2;
     image[tid] = float4(color,1);
-
-    // color = normal, let normal be n, visualize (n+1)/2
 }
