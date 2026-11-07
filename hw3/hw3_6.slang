@@ -45,21 +45,29 @@ void check_triangle_closer(
     float3 b;
     float t;
 
-    while (true) {
+    BVHNode curr;
+    int nodeInd = mesh.bvh_root_index;
+    int end = bvh_nodes[mesh.bvh_root_index].next_index;
 
-        mesh.bvh_root_index;
+    while (nodeInd < end) {
+        curr = bvh_nodes[nodeInd];
 
-    }
+        bool intersect = intersect_aabb(curr.bbox_min, curr.bbox_max, o, d, EPSILON, tMax);
 
-    for (int j = mesh.triangle_begin; j < mesh.triangle_end; j++) {
-        if (!intersect_tri( vertices[triangles[j].x+mesh.vertex_offset], vertices[triangles[j].y+mesh.vertex_offset], vertices[triangles[j].z+mesh.vertex_offset], o, d, EPSILON, tMax, b, t )) continue;
+        if (curr.is_leaf && intersect) {
+            for (int j = curr.triangle_begin; j < curr.triangle_end; j++) {
+                if (!intersect_tri( vertices[triangles[j].x+mesh.vertex_offset], vertices[triangles[j].y+mesh.vertex_offset], vertices[triangles[j].z+mesh.vertex_offset], o, d, EPSILON, tMax, b, t )) continue;
 
-        if (bestShape == -1 || t < bestT) {
-            bestShape = i;
-            bestTri = j;
-            bestT = t;
-            bestB = b;
+                if (bestShape == -1 || t < bestT) {
+                    bestShape = i;
+                    bestTri = j;
+                    bestT = t;
+                    bestB = b;
+                }
+            }
         }
+
+        nodeInd = intersect ? nodeInd + 1 : curr.next_index;
     }
 }
 
