@@ -44,15 +44,104 @@ def compose_transformations(transformations):
         Given a list of transformations, compose them into a matrix.
     """
     # HW 3.4: copy paste your HW2.3 code here
-
     F = np.eye(4, dtype=np.float32)
+    
+    for transform in transformations:
+        (name,value), = transform.items()
+        A = np.eye(4, dtype=np.float32)
+
+        if name == 'scale':
+            A = np.array([
+                [value[0], 0, 0, 0],
+                [0, value[1], 0, 0],
+                [0, 0, value[2], 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'translate':
+            A = np.array([
+                [1, 0, 0, value[0]],
+                [0, 1, 0, value[1]],
+                [0, 0, 1, value[2]],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_x':
+            theta = np.radians(value[0])
+            A = np.array([
+                [1, 0, 0, 0],
+                [0, np.cos(theta), -1 * np.sin(theta), 0],
+                [0, np.sin(theta), np.cos(theta), 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_y':
+            theta = np.radians(value[0])
+            A = np.array([
+                [np.cos(theta), 0, np.sin(theta), 0],
+                [0, 1, 0, 0],
+                [-1 * np.sin(theta), 0, np.cos(theta), 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'rotate_z':
+            theta = np.radians(value[0])
+            A = np.array([
+                [np.cos(theta), -1 * np.sin(theta), 0, 0],
+                [np.sin(theta), np.cos(theta), 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+            ])
+
+        elif name == 'lookat':
+            p = np.array(value['position'], dtype=np.float32)
+            t = np.array(value['target'], dtype=np.float32)
+            up = np.array(value['up'], dtype=np.float32)
+            d=t-p
+            d=d/np.linalg.norm(d)
+
+            r=np.cross(d,up)
+            r=r/np.linalg.norm(r)
+
+            uprime=np.cross(r,d)
+
+            A=np.array([[r[0], uprime[0], -d[0], p[0]],
+                        [r[1], uprime[1], -d[1], p[1]],
+                        [r[2], uprime[2], -d[2], p[2]],
+                        [0, 0, 0, 1]])
+
+        F = A @ F
+
     return F
 
 def interpolate_transformation(transform_keyframes, t):
     # HW 3.4: copy your HW2.4 code here.
 
     # create a new transform from the two keyframes
+
+    kfs = transform_keyframes
+    if t <= kfs[0]['time']:
+        return kfs[0]['transform']
+    if t >= kfs[-1]['time']:
+        return kfs[-1]['transform']
+
+    for i in range(len(kfs)-1):
+        if kfs[i]['time'] <= t <= kfs[i + 1]['time']:
+            k0, k1 = kfs[i], kfs[i + 1]
+            break
+
+    s = (t - k0['time']) / (k1['time'] - k0['time'])
+
+    lerp = lambda a, b: [(1 - s) * x + s * y for x, y in zip(a, b)]
     interp_transforms = []
+    for tr0, tr1 in zip(k0['transform'], k1['transform']):
+        (name, v0), = tr0.items()
+        (_,    v1), = tr1.items()
+        if name == 'lookat':
+            v = {key: lerp(v0[key], v1[key]) for key in ('position', 'target', 'up')}
+        else:
+            v = lerp(v0, v1)
+        interp_transforms.append({name: v})
     return interp_transforms
 
 def get_transformation(obj, t):
