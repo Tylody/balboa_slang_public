@@ -10,4 +10,6 @@ void compute_main(uint tid : SV_DispatchThreadID,
         return;
     }
     // TODO: HW 4.1. Your code below.
+
+    
 }
